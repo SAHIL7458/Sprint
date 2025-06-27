@@ -1,0 +1,296 @@
+CREATE TABLE Login (
+    customer_id INT NOT NULL,
+    last_login DATETIME NOT NULL,
+    last_logout DATETIME NOT NULL,
+    updated_password VARCHAR(255) NOT NULL,
+    old_password VARCHAR(255) NOT NULL,
+    is_now_logged_in VARCHAR(1) NOT NULL  -- 'Y' or 'N'
+);
+
+
+INSERT INTO Login VALUES 
+(101, '2025-06-27 08:00:00', '2025-06-27 08:30:00', 'pass1234', 'pass0000', 'N'),
+(102, '2025-06-27 09:00:00', '2025-06-27 09:30:00', 'test@321', 'test@123', 'Y'),
+(103, '2025-06-27 10:00:00', '2025-06-27 10:45:00', 'abc@5678', 'abc@1234', 'Y'),
+(104, '2025-06-27 10:15:00', '2025-06-27 10:55:00', 'xyz@8901', 'xyz@4567', 'Y'),
+(105, '2025-06-27 11:00:00', '2025-06-27 11:30:00', 'hello@11', 'hello@10', 'N'),
+(106, '2025-06-27 11:30:00', '2025-06-27 12:10:00', 'test@999', 'test@111', 'Y');
+
+SELECT customer_id
+FROM (
+    SELECT customer_id,
+           ROW_NUMBER() OVER (ORDER BY last_login) AS row_num,
+           COUNT(*) OVER () AS total_logged_in
+    FROM Login
+    WHERE is_now_logged_in = 'Y'
+) sub
+WHERE row_num <= total_logged_in / 2;
+-----------------------------------------------------------US_SQL_002 -----------------------------------------------------------------
+
+CREATE TABLE Registration (
+    customer_id INT PRIMARY KEY NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    address VARCHAR(500) NOT NULL,
+    contact_number BIGINT NOT NULL
+);
+
+INSERT INTO Registration VALUES 
+(1, 'Sam', 'sam@example.com', 'pass123', 'RZ/12-4, Mahavir Enclave, New Delhi, India', 9876543210),
+(2, 'John', 'john@example.com', 'john123', '12B, Sunset Blvd, Los Angeles, US', 9876543211),
+(3, 'Alice', 'alice@example.com', 'alice456', 'Kolkata, India', 9876543212),
+(4, 'Bob', 'bob@example.com', 'bob789', 'Toronto, Canada', 9876543213);
+
+
+-- For US customers
+UPDATE Registration
+SET customer_name = CONCAT('US_', customer_name)
+WHERE address LIKE '%US%';
+
+-- For Indian customers
+UPDATE Registration
+SET customer_name = CONCAT('IN_', customer_name)
+WHERE address LIKE '%India%';
+---------------------------------------------------US_SQL_003 -----------------------------------------------------------------
+
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    price INT NOT NULL,
+    quantity INT NOT NULL,
+    reserved VARCHAR(3) NOT NULL, -- e.g. 'Yes' or 'No'
+    customer_id INT NOT NULL
+);
+
+INSERT INTO Product VALUES
+(201, 'Rice', 50, 10, 'Yes', 1),
+(202, 'Wheat', 40, 15, 'No', 2),
+(203, 'Sugar', 30, 20, 'Yes', 1),
+(204, 'Oil', 100, 5, 'No', 3),
+(205, 'Salt', 10, 25, 'No', 2),
+(206, 'Milk', 20, 30, 'Yes', 1),
+(207, 'Sugar', 30, 18, 'Yes', 3); -- same product name but different record
+
+SELECT DISTINCT product_name, price
+FROM Product;
+
+SELECT customer_id, product_name, product_id
+FROM Product
+ORDER BY customer_id;
+
+UPDATE Product
+SET quantity = quantity + 1,
+    reserved = 'No'
+WHERE product_id = 201; -- Example: removing "Rice" from cart
+
+---------------------------------------------------US_SQL_004 -----------------------------------------------------------------
+
+CREATE TABLE TransactionTable (
+    transaction_id INT PRIMARY KEY NOT NULL,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    total_amount INT NOT NULL,
+    no_of_items INT NOT NULL
+    -- You can optionally add FOREIGN KEY (customer_id) REFERENCES Registration(customer_id),
+    -- FOREIGN KEY (product_id) REFERENCES Product(product_id)
+);
+
+
+INSERT INTO TransactionTable VALUES
+(1001, 1, 201, 100, 2),   -- (e.g., 2 Rice at ₹50 each)
+(1002, 2, 202, 80, 2),    -- 2 Wheat
+(1003, 3, 204, 300, 3),   -- 3 Oil
+(1004, 1, 206, 60, 3),    -- 3 Milk
+(1005, 2, 205, 30, 3);    -- 3 Salt
+
+
+SELECT *
+FROM TransactionTable
+ORDER BY total_amount DESC;
+
+SELECT *
+FROM (
+    SELECT *, DENSE_RANK() OVER (ORDER BY total_amount DESC) AS rank
+    FROM TransactionTable
+) ranked
+WHERE rank = 2;
+
+---------------------------------------------------US_SQL_005 -----------------------------------------------------------------
+
+CREATE TABLE Admin (
+    admin_id INT PRIMARY KEY NOT NULL,
+    admin_password VARCHAR(255) NOT NULL,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    transaction_id INT NOT NULL
+);
+
+INSERT INTO Admin VALUES
+(9001, 'admin@123', 1, 201, 1001),
+(9002, 'admin@123', 2, 202, 1002),
+(9003, 'admin@123', 3, 204, 1003),
+(9004, 'admin@123', 1, 206, 1004);
+
+
+SELECT 
+    r.customer_id,
+    r.customer_name,
+    r.email,
+    r.address,
+    p.product_name,
+    t.transaction_id,
+    t.total_amount,
+    t.no_of_items
+FROM Admin a
+JOIN Registration r ON a.customer_id = r.customer_id
+JOIN Product p ON a.product_id = p.product_id
+JOIN TransactionTable t ON a.transaction_id = t.transaction_id
+ORDER BY t.transaction_id;
+
+
+
+-----------------------------------------------------------US_SQL_0001-05 -----------------------------------------------------------------
+
+CREATE TABLE Login (
+    customer_id INT NOT NULL,
+    last_login DATETIME NOT NULL,
+    last_logout DATETIME NOT NULL,
+    updated_password VARCHAR(255) NOT NULL,
+    old_password VARCHAR(255) NOT NULL,
+    is_now_logged_in VARCHAR(1) NOT NULL
+);
+
+
+CREATE TABLE Registration (
+    customer_id INT PRIMARY KEY NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    address VARCHAR(500) NOT NULL,
+    contact_number BIGINT NOT NULL
+);
+CREATE TABLE Product (
+    product_id INT PRIMARY KEY NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    price INT NOT NULL,
+    quantity INT NOT NULL,
+    reserved VARCHAR(3) NOT NULL,
+    customer_id INT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Registration(customer_id)
+);
+
+CREATE TABLE TransactionTable (
+    transaction_id INT PRIMARY KEY NOT NULL,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    total_amount INT NOT NULL,
+    no_of_items INT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Registration(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id)
+);
+CREATE TABLE Admin (
+    admin_id INT PRIMARY KEY NOT NULL,
+    admin_password VARCHAR(255) NOT NULL,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    transaction_id INT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Registration(customer_id),
+    FOREIGN KEY (product_id) REFERENCES Product(product_id),
+    FOREIGN KEY (transaction_id) REFERENCES TransactionTable(transaction_id)
+);
+INSERT INTO Registration VALUES 
+(1, 'Sam', 'sam@example.com', 'pass123', 'New Delhi, India', 9876543210),
+(2, 'John', 'john@example.com', 'john123', 'Los Angeles, US', 9876543211),
+(3, 'Alice', 'alice@example.com', 'alice456', 'Kolkata, India', 9876543212);
+
+
+
+INSERT INTO Login VALUES 
+(1, '2025-06-27 08:00:00', '2025-06-27 08:30:00', 'new123', 'old123', 'Y'),
+(2, '2025-06-27 09:00:00', '2025-06-27 09:30:00', 'test123', 'pass123', 'Y'),
+(3, '2025-06-27 10:00:00', '2025-06-27 10:30:00', 'alice789', 'alice456', 'N');
+
+
+INSERT INTO Product VALUES
+(201, 'Rice', 50, 10, 'Yes', 1),
+(202, 'Wheat', 40, 15, 'Yes', 2),
+(203, 'Oil', 100, 5, 'Yes', 3),
+(204, 'Salt', 10, 20, 'No', 2),
+(205, 'Milk', 20, 30, 'Yes', 1);
+
+
+
+INSERT INTO TransactionTable VALUES
+(1001, 1, 201, 100, 2),
+(1002, 2, 202, 80, 2),
+(1003, 3, 203, 300, 3),
+(1004, 1, 205, 60, 3);
+
+INSERT INTO Admin VALUES
+(9001, 'admin@123', 1, 201, 1001),
+(9002, 'admin@123', 2, 202, 1002),
+(9003, 'admin@123', 3, 203, 1003),
+(9004, 'admin@123', 1, 205, 1004);
+
+
+SELECT customer_id
+FROM (
+    SELECT customer_id,
+           ROW_NUMBER() OVER (ORDER BY last_login) AS row_num,
+           COUNT(*) OVER () AS total_logged_in
+    FROM Login
+    WHERE is_now_logged_in = 'Y'
+) sub
+WHERE row_num <= total_logged_in / 2;
+
+-- US Customers
+UPDATE Registration
+SET customer_name = CONCAT('US_', customer_name)
+WHERE address LIKE '%US%';
+
+-- Indian Customers
+UPDATE Registration
+SET customer_name = CONCAT('IN_', customer_name)
+WHERE address LIKE '%India%';
+
+SELECT DISTINCT product_name, price
+FROM Product;
+
+SELECT customer_id, product_name, product_id
+FROM Product
+ORDER BY customer_id;
+
+
+SELECT *
+FROM TransactionTable
+ORDER BY total_amount DESC;
+SELECT *
+FROM (
+    SELECT *, DENSE_RANK() OVER (ORDER BY total_amount DESC) AS rank
+    FROM TransactionTable
+) ranked
+WHERE rank = 2;
+
+
+SELECT 
+    r.customer_id,
+    r.customer_name,
+    r.email,
+    r.address,
+    p.product_name,
+    t.transaction_id,
+    t.total_amount,
+    t.no_of_items
+FROM Admin a
+JOIN Registration r ON a.customer_id = r.customer_id
+JOIN Product p ON a.product_id = p.product_id
+JOIN TransactionTable t ON a.transaction_id = t.transaction_id
+ORDER BY t.transaction_id;
+
+
+
+
+
+
+
