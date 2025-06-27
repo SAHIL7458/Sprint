@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Login - Grocery Store</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #74ebd5, #ACB6E5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 0.95em;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .register-link {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 0.95em;
+    }
+
+    .register-link a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h2>Login to Grocery Store</h2>
+    <form id="loginForm">
+      <label for="customerId">Customer ID:</label>
+      <input type="text" id="customerId" maxlength="20" required>
+
+      <label for="loginPassword">Password:</label>
+      <input type="password" id="loginPassword" maxlength="30" required>
+
+      <button type="submit">Login</button>
+
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="register-link">
+        New User? <a href="#" onclick="openRegistration()">Register Yourself</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const id = document.getElementById("customerId").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+      const errorDiv = document.getElementById("errorMessage");
+
+      // 🟢 Fetch registered user from localStorage
+      const storedUser = JSON.parse(localStorage.getItem("registeredUser"));
+
+      // 🛑 If no user found (not registered)
+      if (!storedUser) {
+        errorDiv.textContent = "No registered user found. Please register first.";
+        return;
+      }
+
+      // 🔴 ID and password validations
+      if (storedUser.customerId !== id && storedUser.password !== password) {
+        errorDiv.textContent = "ID/password not valid";
+      } else if (storedUser.customerId !== id) {
+        errorDiv.textContent = "ID not valid";
+      } else if (storedUser.password !== password) {
+        errorDiv.textContent = "Password not valid";
+      } else {
+        errorDiv.textContent = "";
+        // 🟢 Save session and redirect
+        localStorage.setItem("sessionUser", JSON.stringify(storedUser));
+        alert("Login successful! Welcome to the Grocery Store.");
+        window.location.href = "grocery_home.html"; // Simulated home page
+      }
+    });
+
+    function openRegistration() {
+      window.location.href = "registration.html"; // Change to your registration form filename
+    }
+  </script>
+
+</body>
+</html>

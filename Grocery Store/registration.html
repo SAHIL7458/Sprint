@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Registration</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #c6ffdd, #fbd786, #f7797d);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      margin-top: 60px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 500px;
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      margin-top: 12px;
+      display: block;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 5px rgba(0,123,255,0.3);
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .success-message {
+      color: green;
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    #acknowledgment {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #e8f5e9;
+      border-left: 5px solid #2e7d32;
+      border-radius: 8px;
+    }
+
+    #acknowledgment p {
+      margin: 5px 0;
+      font-size: 15px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Customer Registration</h2>
+    <form id="registrationForm">
+      <label>Customer Name:
+        <input type="text" id="customerName" maxlength="50" placeholder="Enter your full name">
+      </label>
+
+      <label>Email:
+        <input type="text" id="email" placeholder="example@email.com">
+      </label>
+
+      <label>Password:
+        <input type="password" id="password" maxlength="30" placeholder="Min 5 chars with uppercase, number, symbol">
+      </label>
+
+      <label>Address:
+        <textarea id="address" maxlength="100" rows="3" placeholder="Street, City, State"></textarea>
+      </label>
+
+      <label>Contact Number:
+        <input type="text" id="contactNumber" maxlength="10" placeholder="10-digit number">
+      </label>
+
+      <button type="submit">Register</button>
+    </form>
+
+    <div id="acknowledgment">
+      <p class="success-message">Customer Registration successful.</p>
+      <p><strong>Customer ID:</strong> <span id="customerId"></span></p>
+      <p><strong>Name:</strong> <span id="ackName"></span></p>
+      <p><strong>Email:</strong> <span id="ackEmail"></span></p>
+    </div>
+  </div>
+
+  <script>
+    function generateCustomerId() {
+      return 'CUST-' + Math.floor(100000 + Math.random() * 900000);
+    }
+  
+    function validateForm(data) {
+      const nameRegex = /^[A-Za-z\s]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{5,}$/;
+      const contactRegex = /^\d{10}$/;
+  
+      if (!data.customerName || !nameRegex.test(data.customerName)) {
+        alert("Customer Name must have alphabets only");
+        return false;
+      }
+  
+      if (!data.email || !emailRegex.test(data.email)) {
+        alert("Email id not valid");
+        return false;
+      }
+  
+      if (!data.password || !passwordRegex.test(data.password)) {
+        alert("Password is not matching the criteria");
+        return false;
+      }
+  
+      if (!data.address) {
+        alert("Address field must not be blank or null");
+        return false;
+      }
+  
+      if (!data.contactNumber || !contactRegex.test(data.contactNumber)) {
+        alert("Contact number must be numeric and 10 digits");
+        return false;
+      }
+  
+      return true;
+    }
+  
+    document.getElementById("registrationForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+  
+      const data = {
+        customerName: document.getElementById("customerName").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        contactNumber: document.getElementById("contactNumber").value.trim()
+      };
+  
+      if (!validateForm(data)) return;
+  
+      const customerId = generateCustomerId();
+  
+      // ✅ Save the full customer object including ID
+      const customerData = {
+        ...data,
+        customerId: customerId
+      };
+  
+      // ✅ Store in localStorage
+      localStorage.setItem("registeredUser", JSON.stringify(customerData));
+  
+      // Show acknowledgment screen
+      document.getElementById("customerId").innerText = customerId;
+      document.getElementById("ackName").innerText = data.customerName;
+      document.getElementById("ackEmail").innerText = data.email;
+      document.getElementById("acknowledgment").style.display = 'block';
+  
+      // Reset the form
+      document.getElementById("registrationForm").reset();
+  
+      // ✅ Redirect to login.html after 1.5 seconds
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 9500);
+    });
+  </script>
+  
+
+</body>
+</html>

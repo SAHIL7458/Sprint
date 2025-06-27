@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Online Grocery Store</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+    }
+
+    nav {
+      background-color: #28a745;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      color: white;
+    }
+
+    nav .nav-links a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    nav .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    .header {
+      text-align: center;
+      padding: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+      font-size: 20px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .product {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .product h4, .product p {
+      margin: 8px 0;
+    }
+
+    .product button {
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .product button:hover {
+      background-color: #0056b3;
+    }
+
+    .section {
+      padding: 30px;
+      display: none;
+    }
+
+    .cart-items, .cart-summary {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .cart-items {
+      width: 60%;
+    }
+
+    .cart-summary {
+      width: 35%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-left: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+
+    .cart-item button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .invoice {
+      background-color: #fff;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .input-edit {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div><strong>Online Grocery Store</strong></div>
+    <div class="nav-links">
+      <a onclick="showSection('home')">Home</a>
+      <a onclick="showSection('profile')">My Profile</a>
+      <a onclick="showSection('cart')">Cart</a>
+      <a onclick="logout()">Logout</a>
+    </div>
+  </nav>
+
+  <div class="header" id="welcomeHeader">Hello <span id="customerName">Customer</span> to Online Grocery Store</div>
+
+  <div id="home" class="section" style="display:block;">
+    <div class="products" id="productList"></div>
+  </div>
+
+  <div id="profile" class="section">
+    <h3>My Profile</h3>
+    <div id="profileDetails"></div>
+  </div>
+
+  <div id="cart" class="section">
+    <h3>Your Cart</h3>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-summary" id="cartSummary"></div>
+  </div>
+
+  <script>
+    const customer = JSON.parse(localStorage.getItem("sessionUser"));
+    if (!customer) {
+      alert("Please login first.");
+      window.location.href = "login.html";
+    }
+
+    const products = [
+      { id: 1, name: "Rice", price: 40 },
+      { id: 2, name: "Milk", price: 25 },
+      { id: 3, name: "Wheat Flour", price: 35 },
+      { id: 4, name: "Oil", price: 120 },
+      { id: 5, name: "Sugar", price: 30 }
+    ];
+
+    let cart = [];
+
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+      document.getElementById(id).style.display = "block";
+      if (id === "profile") renderProfile();
+      if (id === "cart") renderCart();
+      if (id === "home") location.reload();
+    }
+
+    document.getElementById("customerName").textContent = customer.customerName;
+
+    const productList = document.getElementById("productList");
+    products.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "product";
+      div.innerHTML = `
+        <h4>${p.name}</h4>
+        <p>Price: ₹${p.price}</p>
+        <button onclick="addToCart(${p.id})">Add to Cart</button>
+      `;
+      productList.appendChild(div);
+    });
+
+    function addToCart(productId) {
+      const item = products.find(p => p.id === productId);
+      cart.push(item);
+      alert(`${item.name} added to cart`);
+    }
+
+    function renderProfile() {
+      const container = document.getElementById("profileDetails");
+      container.innerHTML = `
+        <p><strong>ID:</strong> ${customer.customerId}</p>
+        <p><strong>Name:</strong><br><input class="input-edit" id="name" value="${customer.customerName}"></p>
+        <p><strong>Email:</strong><br><input class="input-edit" id="email" value="${customer.email}"></p>
+        <p><strong>Address:</strong><br><input class="input-edit" id="address" value="${customer.address}"></p>
+        <p><strong>Contact:</strong><br><input class="input-edit" id="contact" value="${customer.contactNumber}"></p>
+        <button onclick="updateProfile()">Save</button>
+      `;
+    }
+
+    function updateProfile() {
+      customer.customerName = document.getElementById("name").value;
+      customer.email = document.getElementById("email").value;
+      customer.address = document.getElementById("address").value;
+      customer.contactNumber = document.getElementById("contact").value;
+      localStorage.setItem("sessionUser", JSON.stringify(customer));
+      localStorage.setItem("registeredUser", JSON.stringify(customer));
+      document.getElementById("customerName").textContent = customer.customerName;
+      alert("Profile updated successfully!");
+    }
+
+    function renderCart() {
+      const cartDiv = document.getElementById("cartItems");
+      const summaryDiv = document.getElementById("cartSummary");
+      cartDiv.innerHTML = "";
+      summaryDiv.innerHTML = "";
+
+      if (cart.length === 0) {
+        cartDiv.innerHTML = "<p>Your cart is empty.</p>";
+        return;
+      }
+
+      let total = 0;
+      cart.forEach((item, index) => {
+        total += item.price;
+        cartDiv.innerHTML += `
+          <div class="cart-item">
+            <span>${item.name} - ₹${item.price}</span>
+            <button onclick="removeFromCart(${index})">Delete</button>
+          </div>
+        `;
+      });
+
+      summaryDiv.innerHTML = `
+        <h4>Summary</h4>
+        <p>Total Items: ${cart.length}</p>
+        <p>Total Amount: ₹${total}</p>
+        <button onclick="checkout()">Checkout</button>
+      `;
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function checkout() {
+      if (cart.length === 0) return;
+      const invoiceHtml = cart.map(item => `<li>${item.name} - ₹${item.price}</li>`).join("");
+      const total = cart.reduce((acc, item) => acc + item.price, 0);
+
+      document.getElementById("cartSummary").innerHTML = `
+        <p class="success">Order Placed Successfully!</p>
+        <div class="invoice">
+          <h4>Invoice</h4>
+          <ul>${invoiceHtml}</ul>
+          <p><strong>Total: ₹${total}</strong></p>
+        </div>
+      `;
+      cart = [];
+    }
+
+    function logout() {
+      localStorage.removeItem("sessionUser");
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>
