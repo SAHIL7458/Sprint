@@ -1,0 +1,67 @@
+
+
+#!/bin/bash
+
+FILE="products.txt"
+
+# Check if file exists
+if [ ! -f "$FILE" ]; then
+    echo "Error: File '$FILE' does not exist!"
+    exit 1
+fi
+
+while true; do
+    echo ""
+    echo "========== PRODUCT MANAGEMENT MENU =========="
+    echo "1. Sort Products by Product Name (Ascending)"
+    echo "2. Search Product by Name"
+    echo "3. Replace Product Name"
+    echo "4. Exit"
+    echo "============================================="
+    read -p "Enter your choice [1-4]: " choice
+
+    case $choice in
+        1)
+            echo ""
+            echo "Sorted Products by Product Name (Ascending):"
+            echo "ProductID | ProductName | ProductPrice | ProductQuantity"
+            echo "----------------------------------------------------------"
+            sort -t '|' -k2,2 "$FILE"
+            ;;
+        2)
+            read -p "Enter product name to search: " search_name
+            echo ""
+            echo "Searching for product name: '$search_name'"
+            echo "ProductID | ProductName | ProductPrice | ProductQuantity"
+            echo "----------------------------------------------------------"
+            awk -F'|' -v name="$search_name" '$2 == name' "$FILE"
+            ;;
+        3)
+            read -p "Enter product name to search: " old_name
+            read -p "Enter new product name to replace with: " new_name
+            echo "Replacing all occurrences of '$old_name' with '$new_name'..."
+            cp "$FILE" "${FILE}.bak"
+            awk -F'|' -v old="$old_name" -v new="$new_name" 'BEGIN {OFS=FS} { if ($2 == old) $2 = new; print }' "$FILE" > temp && mv temp "$FILE"
+            echo "Replacement complete. Updated product list:"
+            cat "$FILE"
+            ;;
+        4)
+            echo "Exiting Product Management System."
+            exit 0
+            ;;
+        *)
+            echo "Invalid choice. Please enter a number between 1 and 4."
+            ;;
+    esac
+done
+
+
+how to run
+Save the script as product_manager.sh
+
+Make it executable:
+chmod +x product_manager.sh
+
+
+Run it:
+./product_manager.sh

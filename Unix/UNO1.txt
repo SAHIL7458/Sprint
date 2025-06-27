@@ -1,0 +1,105 @@
+products.txt
+
+
+ProductID|ProductName|ProductPrice|ProductQuantity
+101|Soap|30|15
+102|Shampoo|120|10
+103|Toothpaste|45|20
+
+#!/bin/bash
+
+# Input file
+FILE="products.txt"
+
+# Check if file exists
+if [ ! -f "$FILE" ]; then
+  echo "Error: $FILE not found!"
+  exit 1
+fi
+
+echo "Sorted Products by Product Name (Ascending):"
+echo "ProductID | ProductName | ProductPrice | ProductQuantity"
+echo "----------------------------------------------------------"
+
+# Sort based on ProductName (2nd field)
+sort -t '|' -k2,2 "$FILE"
+
+how to run 
+chmod +x sort_by_product_name.sh
+./sort_by_product_name.sh
+----------------------------------------------US_UI_002---------------------------------
+
+Shell Script: replace_product_name.sh
+
+#!/bin/bash
+
+# Input file
+FILE="products.txt"
+
+# Check if file exists
+if [ ! -f "$FILE" ]; then
+  echo "Error: File $FILE not found!"
+  exit 1
+fi
+
+# Prompt for old and new product names
+read -p "Enter the product name to search: " old_name
+read -p "Enter the new product name to replace with: " new_name
+
+# Confirm action
+echo "Replacing all occurrences of '$old_name' with '$new_name'..."
+
+# Use sed to perform replacement in the second field (product name)
+# Make a backup file first
+cp "$FILE" "${FILE}.bak"
+
+# Do the replacement and update the file
+awk -F'|' -v old="$old_name" -v new="$new_name" 'BEGIN {OFS=FS}
+{
+    if ($2 == old) $2 = new
+    print
+}' "$FILE" > temp && mv temp "$FILE"
+
+echo "Replacement complete. Updated product list:"
+cat "$FILE"
+
+how to run 
+
+chmod +x replace_product_name.sh
+./replace_product_name.sh
+
+
+----------------------------------------------US_UI_003---------------------------------
+search_product_by_name.sh
+
+
+#!/bin/bash
+
+# Product repository file
+FILE="products.txt"
+
+# Check file existence
+if [ ! -f "$FILE" ]; then
+  echo "Error: File $FILE does not exist."
+  exit 1
+fi
+
+# Prompt user for product name to search
+read -p "Enter product name to search: " search_name
+
+# Perform case-sensitive search for exact matches in the 2nd field
+echo "Searching for product name: '$search_name'"
+echo "Matching Product(s):"
+echo "ProductID | ProductName | ProductPrice | ProductQuantity"
+echo "----------------------------------------------------------"
+
+awk -F'|' -v name="$search_name" '$2 == name' "$FILE"
+
+
+
+how to run 
+chmod +x search_product_by_name.sh
+./search_product_by_name.sh
+
+
+
